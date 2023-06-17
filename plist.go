@@ -17,6 +17,7 @@ const (
 	OpenStepFormat = 3
 	GNUStepFormat  = 4
 )
+const XMLNoEmptyTag = 1<<10
 
 var FormatNames = map[int]string{
 	InvalidFormat:  "unknown/invalid",

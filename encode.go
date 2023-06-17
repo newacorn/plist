@@ -19,6 +19,13 @@ type Encoder struct {
 	format int
 
 	indent string
+	extraAttr int
+}
+func (p *Encoder)SetFormat(format int){
+	if format&XMLNoEmptyTag!=0{
+		p.extraAttr |= XMLNoEmptyTag
+	}
+	p.format &^=p.extraAttr
 }
 
 // Encode writes the property list encoding of v to the stream.
@@ -40,7 +47,7 @@ func (p *Encoder) Encode(v interface{}) (err error) {
 	var g generator
 	switch p.format {
 	case XMLFormat:
-		g = newXMLPlistGenerator(p.writer)
+		g = newXMLPlistGenerator(p.writer,p.extraAttr&XMLNoEmptyTag!=0)
 	case BinaryFormat, AutomaticFormat:
 		g = newBplistGenerator(p.writer)
 	case OpenStepFormat, GNUStepFormat:
@@ -118,6 +125,10 @@ func Marshal(v interface{}, format int) ([]byte, error) {
 func MarshalIndent(v interface{}, format int, indent string) ([]byte, error) {
 	buf := &bytes.Buffer{}
 	enc := NewEncoderForFormat(buf, format)
+	if format&XMLNoEmptyTag!=0{
+		enc.extraAttr |=XMLNoEmptyTag
+		enc.format &^=enc.extraAttr
+	}
 	enc.Indent(indent)
 	if err := enc.Encode(v); err != nil {
 		return nil, err

@@ -44,6 +44,7 @@ type xmlPlistGenerator struct {
 	indent     string
 	depth      int
 	putNewline bool
+	noEmptyTag    bool
 }
 
 func (p *xmlPlistGenerator) generateDocument(root cfValue) {
@@ -72,6 +73,15 @@ func (p *xmlPlistGenerator) closeTag(n string) {
 
 func (p *xmlPlistGenerator) element(n string, v string) {
 	p.writeIndent(0)
+	if len(v)==0&&p.noEmptyTag{
+			p.WriteByte('<')
+			p.WriteString(n)
+			p.WriteByte('>')
+			p.WriteString("</")
+			p.WriteString(n)
+			p.WriteByte('>')
+			return
+	}
 	if len(v) == 0 {
 		p.WriteByte('<')
 		p.WriteString(n)
@@ -173,6 +183,6 @@ func (p *xmlPlistGenerator) Indent(i string) {
 	p.indent = i
 }
 
-func newXMLPlistGenerator(w io.Writer) *xmlPlistGenerator {
-	return &xmlPlistGenerator{Writer: bufio.NewWriter(w)}
+func newXMLPlistGenerator(w io.Writer,n bool) *xmlPlistGenerator {
+	return &xmlPlistGenerator{Writer: bufio.NewWriter(w),noEmptyTag: n}
 }
